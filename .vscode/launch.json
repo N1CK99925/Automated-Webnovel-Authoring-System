@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-NovelModelPipelineApplication<Novel-Model-Pipeline>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "Nick.Novel.Model.Pipeline.NovelModelPipelineApplication",
+            "projectName": "Novel-Model-Pipeline",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
