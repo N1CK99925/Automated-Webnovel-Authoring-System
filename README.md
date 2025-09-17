@@ -1,2 +1,0 @@
-# Automated-Webnovel Authoring-System
-
