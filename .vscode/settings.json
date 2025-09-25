@@ -1,4 +1,9 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+  "java.configuration.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.enablePreview": true,
+  "java.compile.mavenAnnotationProcessing.enabled": true
+
+
 }
