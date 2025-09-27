@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-
+import Nick.Novel.Model.Pipeline.common.notion.LoreResponse;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -47,6 +47,18 @@ public class GenerateChapterService {
                     System.err.println("Error calling AI service: " + ex.getMessage());
                     return Mono.just("");
                 });
+    }
+    
+    public Mono<LoreResponse> extractLore(String story){
+        return webClient.post()
+        .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(Map.of("brief", story)) 
+            .retrieve()
+            .bodyToMono(LoreResponse.class)
+            .onErrorResume(WebClientResponseException.class, ex -> {
+                System.err.println("Error calling Lore extractor: " + ex.getMessage());
+                return Mono.empty();
+            });
     }
 
     // Helper function to enforce word limit

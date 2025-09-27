@@ -21,8 +21,8 @@ public class NovelModelPipelineApplication {
         return _ -> {
             System.out.println("✅ Chapters DB = " + props.getChapters());
             System.out.println("✅ Characters DB = " + props.getCharacters());
-            System.out.println("✅ Realms DB = " + props.getRealms());
-            System.out.println("✅ Clans DB = " + props.getClans());
+            System.out.println("✅ Realms DB = " + props.getLore());
+        
             
         };
 	

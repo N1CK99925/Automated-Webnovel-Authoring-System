@@ -25,7 +25,6 @@ public class NotionService {
     }
 
    public Mono<String> saveChapterReactive(String title, String brief, String content) {
-    System.out.println("=== NOTION SERVICE DEBUG ===");
     System.out.println("Database ID: " + props.getChapters());
     System.out.println("Title: " + title);
     System.out.println("Brief: " + brief);
@@ -96,5 +95,31 @@ private List<Map<String, Object>> splitContentIntoBlocks(String content) {
     
     System.out.println("Split content into " + blocks.size() + " blocks");
     return blocks;
+}
+
+
+public Mono<LoreResponse> saveCharacter (String name, String clan, String role, String status, String lastAppearance, String details ){
+    Map<String, Object> properties = Map.of(
+        "Name", Map.of("title", List.of(Map.of("text", Map.of("content", name)))),
+        "Clan", Map.of("rich_text", List.of(Map.of("text", Map.of("content", clan)))),
+        "Role", Map.of("rich_text", List.of(Map.of("text", Map.of("content", role)))),
+        "Status", Map.of("rich_text", List.of(Map.of("text", Map.of("content", status)))),
+        "Last Appearance", Map.of("rich_text", List.of(Map.of("text", Map.of("content", lastAppearance)))),
+        "Details", Map.of("rich_text", List.of(Map.of("text", Map.of("content", details))))
+    );
+
+    return saveToDatabaseReactive(props.getCharacters(), properties, null)
+        .then(Mono.just(new LoreResponse()));
+}
+
+public Mono<LoreResponse> saveLore (String name, String type, String details ){
+    Map<String, Object> properties = Map.of(
+        "Name", Map.of("title", List.of(Map.of("text", Map.of("content", name)))),
+        "Type", Map.of("rich_text", List.of(Map.of("text", Map.of("content", type)))),
+        "Details", Map.of("rich_text", List.of(Map.of("text", Map.of("content", details))))
+    );
+
+    return saveToDatabaseReactive(props.getLore(), properties, null)
+        .then(Mono.just(new LoreResponse()));
 }
 }

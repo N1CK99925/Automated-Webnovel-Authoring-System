@@ -13,8 +13,7 @@ import lombok.Setter;
 public class NotionProperties {
     private String chapters;
     private String characters;
-    private String artifacts;
-    private String realms;
-    private String clans;
+    private String lore;
+
 
 }
