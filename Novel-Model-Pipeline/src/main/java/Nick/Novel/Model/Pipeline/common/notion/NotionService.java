@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,6 +25,7 @@ public class NotionService {
     }
 
    public Mono<String> saveChapterReactive(String title, String brief, String content) {
+    System.out.println("=== NOTION SERVICE DEBUG ===");
     System.out.println("Database ID: " + props.getChapters());
     System.out.println("Title: " + title);
     System.out.println("Brief: " + brief);
@@ -39,24 +40,32 @@ public class NotionService {
     return saveToDatabaseReactive(props.getChapters(), properties, content);
 }
 
-private Mono<String> saveToDatabaseReactive(String databaseId, Map<String, Object> properties, String content) {
-    Map<String, Object> body = new HashMap<>();
-    body.put("parent", Map.of("database_id", databaseId));
-    body.put("properties", properties);
+    private void saveToDatabase(String databaseId, Map<String, Object> properties, String content) {
+        try {
+            System.out.println("Creating request body for database: " + databaseId);
+            
+            Map<String, Object> body = new HashMap<>();
+            body.put("parent", Map.of("database_id", databaseId));
+            body.put("properties", properties);
 
-    if (content != null) {
-         List<Map<String, Object>> children = splitContentIntoBlocks(content);
-        body.put("children", children);
-    }
-    
+            if (content != null) {
+                body.put("children", List.of(Map.of(
+                    "object", "block",
+                    "type", "paragraph",
+                    "paragraph", Map.of("rich_text", List.of(Map.of(
+                        "type", "text", 
+                        "text", Map.of("content", content)
+                    )))
+                )));
+            }
 
-    // Debug: Print the full request body
-    try {
-        String bodyJson = objectMapper.writeValueAsString(body);
-        System.out.println("Request body JSON: " + bodyJson);
-    } catch (Exception e) {
-        System.err.println("Failed to serialize body for debugging: " + e.getMessage());
-    }
+            // Debug: Print the full request body
+            try {
+                String bodyJson = objectMapper.writeValueAsString(body);
+                System.out.println("Request body JSON: " + bodyJson);
+            } catch (Exception e) {
+                System.err.println("Failed to serialize body for debugging: " + e.getMessage());
+            }
 
     return webClient.post()
         .uri("/pages")
@@ -95,31 +104,5 @@ private List<Map<String, Object>> splitContentIntoBlocks(String content) {
     
     System.out.println("Split content into " + blocks.size() + " blocks");
     return blocks;
-}
-
-
-public Mono<LoreResponse> saveCharacter (String name, String clan, String role, String status, String lastAppearance, String details ){
-    Map<String, Object> properties = Map.of(
-        "Name", Map.of("title", List.of(Map.of("text", Map.of("content", name)))),
-        "Clan", Map.of("rich_text", List.of(Map.of("text", Map.of("content", clan)))),
-        "Role", Map.of("rich_text", List.of(Map.of("text", Map.of("content", role)))),
-        "Status", Map.of("rich_text", List.of(Map.of("text", Map.of("content", status)))),
-        "Last Appearance", Map.of("rich_text", List.of(Map.of("text", Map.of("content", lastAppearance)))),
-        "Details", Map.of("rich_text", List.of(Map.of("text", Map.of("content", details))))
-    );
-
-    return saveToDatabaseReactive(props.getCharacters(), properties, null)
-        .then(Mono.just(new LoreResponse()));
-}
-
-public Mono<LoreResponse> saveLore (String name, String type, String details ){
-    Map<String, Object> properties = Map.of(
-        "Name", Map.of("title", List.of(Map.of("text", Map.of("content", name)))),
-        "Type", Map.of("rich_text", List.of(Map.of("text", Map.of("content", type)))),
-        "Details", Map.of("rich_text", List.of(Map.of("text", Map.of("content", details))))
-    );
-
-    return saveToDatabaseReactive(props.getLore(), properties, null)
-        .then(Mono.just(new LoreResponse()));
 }
 }

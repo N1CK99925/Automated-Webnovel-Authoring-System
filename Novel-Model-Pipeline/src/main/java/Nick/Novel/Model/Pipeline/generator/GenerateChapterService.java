@@ -2,36 +2,19 @@ package Nick.Novel.Model.Pipeline.generator;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import Nick.Novel.Model.Pipeline.common.notion.LoreResponse;
+
 import reactor.core.publisher.Mono;
 
 @Service
-
+@RequiredArgsConstructor
 public class GenerateChapterService {
-    @Qualifier("aiwebclient")
-    private final WebClient webClient;
+    private final WebClient webClient = WebClient.builder().baseUrl("http://localhost:8000").build();
 
-    // Make word limit configurable via application.properties
-    @Value("${novel.chapter.word-limit:2000}")
-    private int wordLimit;
-
-    // constructor to define webclietn cause lombok is doing empty constructor so it uses notion bean instead
-    public GenerateChapterService(@Qualifier("aiwebclient") WebClient webClient){
-        this.webClient = webClient;
-    }
-    /**
-     * Generates a chapter from a brief.
-     * Returns a Mono<String> for async handling.
-     */
-    public Mono<String> generateChapter(String brief) {
+    public String generateChapter(String brief) {
         return webClient.post()
                 .uri("/generate")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -47,18 +30,6 @@ public class GenerateChapterService {
                     System.err.println("Error calling AI service: " + ex.getMessage());
                     return Mono.just("");
                 });
-    }
-    
-    public Mono<LoreResponse> extractLore(String story){
-        return webClient.post()
-        .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(Map.of("brief", story)) 
-            .retrieve()
-            .bodyToMono(LoreResponse.class)
-            .onErrorResume(WebClientResponseException.class, ex -> {
-                System.err.println("Error calling Lore extractor: " + ex.getMessage());
-                return Mono.empty();
-            });
     }
 
     // Helper function to enforce word limit

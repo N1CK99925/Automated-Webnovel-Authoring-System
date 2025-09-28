@@ -7,13 +7,11 @@ app = FastAPI()
 
 class ChapterRequest(BaseModel):
     brief: str
-    max_tokens: int = 4000
-    MIN_WORDS: int = 1500
-
-OLLAMA_URL = "http://localhost:11434/api/generate"
 
 @app.post("/generate")
 def generate_chapter(req: ChapterRequest):
+    # Later: call LLM
+    return {"text": f"Draft chapter based on brief: {req.brief}"}
    
     payload = {
         "model": "llama3",
