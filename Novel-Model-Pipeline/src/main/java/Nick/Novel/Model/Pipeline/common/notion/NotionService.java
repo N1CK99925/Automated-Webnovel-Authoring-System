@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -40,32 +40,24 @@ public class NotionService {
     return saveToDatabaseReactive(props.getChapters(), properties, content);
 }
 
-    private void saveToDatabase(String databaseId, Map<String, Object> properties, String content) {
-        try {
-            System.out.println("Creating request body for database: " + databaseId);
-            
-            Map<String, Object> body = new HashMap<>();
-            body.put("parent", Map.of("database_id", databaseId));
-            body.put("properties", properties);
+private Mono<String> saveToDatabaseReactive(String databaseId, Map<String, Object> properties, String content) {
+    Map<String, Object> body = new HashMap<>();
+    body.put("parent", Map.of("database_id", databaseId));
+    body.put("properties", properties);
 
-            if (content != null) {
-                body.put("children", List.of(Map.of(
-                    "object", "block",
-                    "type", "paragraph",
-                    "paragraph", Map.of("rich_text", List.of(Map.of(
-                        "type", "text", 
-                        "text", Map.of("content", content)
-                    )))
-                )));
-            }
+    if (content != null) {
+         List<Map<String, Object>> children = splitContentIntoBlocks(content);
+        body.put("children", children);
+    }
+    
 
-            // Debug: Print the full request body
-            try {
-                String bodyJson = objectMapper.writeValueAsString(body);
-                System.out.println("Request body JSON: " + bodyJson);
-            } catch (Exception e) {
-                System.err.println("Failed to serialize body for debugging: " + e.getMessage());
-            }
+    // Debug: Print the full request body
+    try {
+        String bodyJson = objectMapper.writeValueAsString(body);
+        System.out.println("Request body JSON: " + bodyJson);
+    } catch (Exception e) {
+        System.err.println("Failed to serialize body for debugging: " + e.getMessage());
+    }
 
     return webClient.post()
         .uri("/pages")

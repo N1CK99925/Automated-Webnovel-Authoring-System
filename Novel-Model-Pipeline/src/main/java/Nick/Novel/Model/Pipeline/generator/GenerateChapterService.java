@@ -2,19 +2,36 @@ package Nick.Novel.Model.Pipeline.generator;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 
 import reactor.core.publisher.Mono;
 
 @Service
-@RequiredArgsConstructor
-public class GenerateChapterService {
-    private final WebClient webClient = WebClient.builder().baseUrl("http://localhost:8000").build();
 
-    public String generateChapter(String brief) {
+public class GenerateChapterService {
+    @Qualifier("aiwebclient")
+    private final WebClient webClient;
+
+    // Make word limit configurable via application.properties
+    @Value("${novel.chapter.word-limit:2000}")
+    private int wordLimit;
+
+    // constructor to define webclietn cause lombok is doing empty constructor so it uses notion bean instead
+    public GenerateChapterService(@Qualifier("aiwebclient") WebClient webClient){
+        this.webClient = webClient;
+    }
+    /**
+     * Generates a chapter from a brief.
+     * Returns a Mono<String> for async handling.
+     */
+    public Mono<String> generateChapter(String brief) {
         return webClient.post()
                 .uri("/generate")
                 .contentType(MediaType.APPLICATION_JSON)

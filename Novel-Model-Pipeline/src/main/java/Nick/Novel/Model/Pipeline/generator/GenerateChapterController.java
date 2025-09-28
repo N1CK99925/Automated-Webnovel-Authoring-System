@@ -10,24 +10,26 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/generator")
 @RequiredArgsConstructor
 public class GenerateChapterController {
+
     private final GenerateChapterService generateChapterService;
     private final NotionService notionService;
 
     @PostMapping("/chapter")
-    public ResponseEntity<?> GenerateChapter(@RequestParam String brief) {
-        String draft = generateChapterService.generateChapter(brief);
-        
-        notionService.saveChapter(
-            "Chapter Draft", //TODO: Make this dynamic bleh
-            brief, 
-            draft);
-            
-        return ResponseEntity.ok(draft);
+    public Mono<ResponseEntity<String>> generateChapter(@RequestParam String brief) {
+        return generateChapterService.generateChapter(brief)
+                .flatMap(draft -> {
+                    // Save to Notion (side effect)
+                    return notionService.saveChapterReactive(
+                            "Chapter Draft", // TODO: Make dynamic
+                            brief,
+                            draft
+                    ).then(Mono.just(ResponseEntity.ok(draft)));
+                });
     }
-    
 }
